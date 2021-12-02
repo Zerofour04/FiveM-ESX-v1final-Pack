@@ -16,8 +16,9 @@ function GetInServiceCount(name)
 	return count
 end
 
+RegisterServerEvent('esx_service:activateService')
 AddEventHandler('esx_service:activateService', function(name, max)
-	InService[name]    = {}
+	InService[name] = {}
 	MaxInService[name] = max
 end)
 
@@ -49,11 +50,26 @@ end)
 ESX.RegisterServerCallback('esx_service:isInService', function(source, cb, name)
 	local isInService = false
 
-	if InService[name][source] then
-		isInService = true
+	if InService[name] ~= nil then
+		if InService[name][source] then
+			isInService = true
+		end
+	else
+		print(('[esx_service] [^3WARNING^7] A service "%s" is not activated'):format(name))
 	end
 
 	cb(isInService)
+end)
+
+ESX.RegisterServerCallback('esx_service:isPlayerInService', function(source, cb, name, target)
+	local isPlayerInService = false
+	local targetXPlayer = ESX.GetPlayerFromId(target)
+
+	if InService[name][targetXPlayer.source] then
+		isPlayerInService = true
+	end
+
+	cb(isPlayerInService)
 end)
 
 ESX.RegisterServerCallback('esx_service:getInServiceList', function(source, cb, name)

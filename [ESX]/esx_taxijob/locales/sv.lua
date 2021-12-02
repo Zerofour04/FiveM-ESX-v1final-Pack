@@ -31,6 +31,7 @@ Locales['sv'] = {
   ['return_to_veh'] = 'vänligen återvänd till ditt fordon och återuppta körningen.',
   ['must_in_taxi'] = 'du måste vara i en ~y~taxi~s~ för att starta uppdraget.',
   ['must_in_vehicle'] = 'du måste vara i ett ~b~fordon~s~ för att starta uppdraget.',
+  ['not_in_taxi'] = 'You left the taxi while on mission!',
   ['have_earned'] = 'du har tjärnat ~g~%s SEK~s~',
   ['comp_earned'] = '- ditt företag har tjärnat ~g~%s SEK~s~\n- du har tjärnat ~g~%s SEK~s~',
   ['deposit_stock'] = 'lagra objekt',
@@ -46,4 +47,6 @@ Locales['sv'] = {
   ['player_cannot_hold'] = 'du har ~r~inte~s~ tillräckligt med ~y~utrymme~s~ för att hålla det!',
   ['blip_taxi'] = 'taxifirman',
   ['phone_taxi'] = 'taxi',
+  ['taxi'] = 'taxi',
+  ['taxi_stock'] = 'taxi Stock'
 }

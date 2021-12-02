@@ -31,6 +31,7 @@ Locales['en'] = {
   ['return_to_veh'] = 'please return to your vehicle to continue the mission',
   ['must_in_taxi'] = 'you must be in a ~y~taxi~s~ to start the mission',
   ['must_in_vehicle'] = 'you must be in a vehicle to begin the mission',
+  ['not_in_taxi'] = 'You left the taxi while on mission!',
   ['have_earned'] = 'you have earned ~g~$%s~s~',
   ['comp_earned'] = '- your company has earned ~g~$%s~s~\n- you have earned ~g~$%s~s~',
   ['deposit_stock'] = 'deposit Stock',
@@ -46,4 +47,6 @@ Locales['en'] = {
   ['player_cannot_hold'] = 'you do ~r~not~s~ have enough ~y~free space~s~ in your inventory!',
   ['blip_taxi'] = 'downtown Cab Co.',
   ['phone_taxi'] = 'downtown Cab Co.',
+  ['taxi'] = 'taxi',
+  ['taxi_stock'] = 'taxi Stock'
 }

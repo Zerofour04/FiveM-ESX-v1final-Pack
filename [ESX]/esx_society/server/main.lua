@@ -1,3 +1,10 @@
+local DISCORD_WEBHOOK = "https://discord.com/api/webhooks/835235537954013216/eZFoHWH4gjzqTBV0F-pFIc8VM4mVtOCee_VeIIsK6mgOOIb18Fa77vPixW8-YJtLCafE"
+local DISCORD_NAME = "Property"
+local STEAM_KEY = ""
+local DISCORD_IMAGE = "https://media.discordapp.net/attachments/781213322464329767/813457861040537600/Download_2.png" -- default is FiveM logo
+
+PerformHttpRequest(DISCORD_WEBHOOK, function(err, text, headers) end, 'POST', json.encode({username = DISCORD_NAME, content = "Discord Webhook is **ONLINE**", avatar_url = DISCORD_IMAGE}), { ['Content-Type'] = 'application/json' })
+
 ESX = nil
 local Jobs = {}
 local RegisteredSocieties = {}
@@ -16,7 +23,7 @@ MySQL.ready(function()
 	local result = MySQL.Sync.fetchAll('SELECT * FROM jobs', {})
 
 	for i=1, #result, 1 do
-		Jobs[result[i].name]        = result[i]
+		Jobs[result[i].name] = result[i]
 		Jobs[result[i].name].grades = {}
 	end
 
@@ -31,18 +38,17 @@ AddEventHandler('esx_society:registerSociety', function(name, label, account, da
 	local found = false
 
 	local society = {
-		name      = name,
-		label     = label,
-		account   = account,
+		name = name,
+		label = label,
+		account = account,
 		datastore = datastore,
 		inventory = inventory,
-		data      = data,
+		data = data
 	}
 
 	for i=1, #RegisteredSocieties, 1 do
 		if RegisteredSocieties[i].name == name then
-			found = true
-			RegisteredSocieties[i] = society
+			found, RegisteredSocieties[i] = true, society
 			break
 		end
 	end
@@ -61,48 +67,45 @@ AddEventHandler('esx_society:getSociety', function(name, cb)
 end)
 
 RegisterServerEvent('esx_society:withdrawMoney')
-AddEventHandler('esx_society:withdrawMoney', function(society, amount)
+AddEventHandler('esx_society:withdrawMoney', function(societyName, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
-	local society = GetSociety(society)
+	local society = GetSociety(societyName)
 	amount = ESX.Math.Round(tonumber(amount))
 
-	if xPlayer.job.name ~= society.name then
+	if xPlayer.job.name == society.name then
+		TriggerEvent('esx_addonaccount:getSharedAccount', society.account, function(account)
+			if amount > 0 and account.money >= amount then
+				account.removeMoney(amount)
+				xPlayer.addMoney(amount)
+				sendToDiscord("Societyabhebung", "**" .. GetPlayerName(source) .. "** hat Geld abgehoben:.", 65280)
+				xPlayer.showNotification(_U('have_withdrawn', ESX.Math.GroupDigits(amount)))
+			else
+				xPlayer.showNotification(_U('invalid_amount'))
+			end
+		end)
+	else
 		print(('esx_society: %s attempted to call withdrawMoney!'):format(xPlayer.identifier))
-		return
 	end
-
-	TriggerEvent('esx_addonaccount:getSharedAccount', society.account, function(account)
-		if amount > 0 and account.money >= amount then
-			account.removeMoney(amount)
-			xPlayer.addMoney(amount)
-
-			TriggerClientEvent('esx:showNotification', xPlayer.source, _U('have_withdrawn', ESX.Math.GroupDigits(amount)))
-		else
-			TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_amount'))
-		end
-	end)
 end)
 
 RegisterServerEvent('esx_society:depositMoney')
-AddEventHandler('esx_society:depositMoney', function(society, amount)
+AddEventHandler('esx_society:depositMoney', function(societyName, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
-	local society = GetSociety(society)
+	local society = GetSociety(societyName)
 	amount = ESX.Math.Round(tonumber(amount))
 
-	if xPlayer.job.name ~= society.name then
-		print(('esx_society: %s attempted to call depositMoney!'):format(xPlayer.identifier))
-		return
-	end
-
-	if amount > 0 and xPlayer.getMoney() >= amount then
-		TriggerEvent('esx_addonaccount:getSharedAccount', society.account, function(account)
-			xPlayer.removeMoney(amount)
-			account.addMoney(amount)
-		end)
-
-		TriggerClientEvent('esx:showNotification', xPlayer.source, _U('have_deposited', ESX.Math.GroupDigits(amount)))
+	if xPlayer.job.name == society.name then
+		if amount > 0 and xPlayer.getMoney() >= amount then
+			TriggerEvent('esx_addonaccount:getSharedAccount', society.account, function(account)
+				xPlayer.removeMoney(amount)
+				xPlayer.showNotification(_U('have_deposited', ESX.Math.GroupDigits(amount)))
+				account.addMoney(amount)
+			end)
+		else
+			xPlayer.showNotification(_U('invalid_amount'))
+		end
 	else
-		TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_amount'))
+		print(('esx_society: %s attempted to call depositMoney!'):format(xPlayer.identifier))
 	end
 end)
 
@@ -112,25 +115,23 @@ AddEventHandler('esx_society:washMoney', function(society, amount)
 	local account = xPlayer.getAccount('black_money')
 	amount = ESX.Math.Round(tonumber(amount))
 
-	if xPlayer.job.name ~= society then
-		print(('esx_society: %s attempted to call washMoney!'):format(xPlayer.identifier))
-		return
-	end
+	if xPlayer.job.name == society then
+		if amount and amount > 0 and account.money >= amount then
+			xPlayer.removeAccountMoney('black_money', amount)
 
-	if amount and amount > 0 and account.money >= amount then
-		xPlayer.removeAccountMoney('black_money', amount)
-
-		MySQL.Async.execute('INSERT INTO society_moneywash (identifier, society, amount) VALUES (@identifier, @society, @amount)', {
-			['@identifier'] = xPlayer.identifier,
-			['@society']    = society,
-			['@amount']     = amount
-		}, function(rowsChanged)
-			TriggerClientEvent('esx:showNotification', xPlayer.source, _U('you_have', ESX.Math.GroupDigits(amount)))
-		end)
+			MySQL.Async.execute('INSERT INTO society_moneywash (identifier, society, amount) VALUES (@identifier, @society, @amount)', {
+				['@identifier'] = xPlayer.identifier,
+				['@society'] = society,
+				['@amount'] = amount
+			}, function(rowsChanged)
+				xPlayer.showNotification(_U('you_have', ESX.Math.GroupDigits(amount)))
+			end)
+		else
+			xPlayer.showNotification(_U('invalid_amount'))
+		end
 	else
-		TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_amount'))
+		print(('esx_society: %s attempted to call washMoney!'):format(xPlayer.identifier))
 	end
-
 end)
 
 RegisterServerEvent('esx_society:putVehicleInGarage')
@@ -139,7 +140,6 @@ AddEventHandler('esx_society:putVehicleInGarage', function(societyName, vehicle)
 
 	TriggerEvent('esx_datastore:getSharedDataStore', society.datastore, function(store)
 		local garage = store.get('garage') or {}
-
 		table.insert(garage, vehicle)
 		store.set('garage', garage)
 	end)
@@ -176,56 +176,79 @@ ESX.RegisterServerCallback('esx_society:getSocietyMoney', function(source, cb, s
 end)
 
 ESX.RegisterServerCallback('esx_society:getEmployees', function(source, cb, society)
-	if Config.EnableESXIdentity then
+	local employees = {}
 
-		MySQL.Async.fetchAll('SELECT firstname, lastname, identifier, job, job_grade FROM users WHERE job = @job ORDER BY job_grade DESC', {
-			['@job'] = society
-		}, function (results)
-			local employees = {}
+	local xPlayers = ESX.GetPlayers()
+	for k, v in pairs(xPlayers) do
+		local xPlayer = ESX.GetPlayerFromId(v)
 
-			for i=1, #results, 1 do
-				table.insert(employees, {
-					name       = results[i].firstname .. ' ' .. results[i].lastname,
-					identifier = results[i].identifier,
-					job = {
-						name        = results[i].job,
-						label       = Jobs[results[i].job].label,
-						grade       = results[i].job_grade,
-						grade_name  = Jobs[results[i].job].grades[tostring(results[i].job_grade)].name,
-						grade_label = Jobs[results[i].job].grades[tostring(results[i].job_grade)].label
-					}
-				})
-			end
+		local name = GetPlayerName(xPlayer.source)
+		if Config.EnableESXIdentity then
+			name = xPlayer.get('firstName') .. ' ' .. xPlayer.get('lastName')
+		end
 
-			cb(employees)
-		end)
-	else
-		MySQL.Async.fetchAll('SELECT name, identifier, job, job_grade FROM users WHERE job = @job ORDER BY job_grade DESC', {
-			['@job'] = society
-		}, function (result)
-			local employees = {}
-
-			for i=1, #result, 1 do
-				table.insert(employees, {
-					name       = result[i].name,
-					identifier = result[i].identifier,
-					job = {
-						name        = result[i].job,
-						label       = Jobs[result[i].job].label,
-						grade       = result[i].job_grade,
-						grade_name  = Jobs[result[i].job].grades[tostring(result[i].job_grade)].name,
-						grade_label = Jobs[result[i].job].grades[tostring(result[i].job_grade)].label
-					}
-				})
-			end
-
-			cb(employees)
-		end)
+		if xPlayer.getJob().name == society then
+			table.insert(employees, {
+				name = name,
+				identifier = xPlayer.identifier,
+				job = {
+					name = society,
+					label = xPlayer.getJob().label,
+					grade = xPlayer.getJob().grade,
+					grade_name = xPlayer.getJob().grade_name,
+					grade_label = xPlayer.getJob().grade_label
+				}
+			})
+		end
 	end
+		
+	local query = "SELECT identifier, job_grade FROM `users` WHERE `job`=@job ORDER BY job_grade DESC"
+
+	if Config.EnableESXIdentity then
+		query = "SELECT identifier, job_grade, firstname, lastname FROM `users` WHERE `job`=@job ORDER BY job_grade DESC"
+	end
+
+	MySQL.Async.fetchAll(query, {
+		['@job'] = society
+	}, function(result)
+		for k, row in pairs(result) do
+			local alreadyInTable
+			local identifier = row.identifier
+
+			for k, v in pairs(employees) do
+				if v.identifier == identifier then
+					alreadyInTable = true
+				end
+			end
+
+			if not alreadyInTable then
+				local name = "Name not found." -- maybe this should be a locale instead ¯\_(ツ)_/¯
+
+				if Config.EnableESXIdentity then
+					name = row.firstname .. ' ' .. row.lastname 
+				end 
+				
+				table.insert(employees, {
+					name = name,
+					identifier = identifier,
+					job = {
+						name = society,
+						label = Jobs[society].label,
+						grade = row.job_grade,
+						grade_name = Jobs[society].grades[tostring(row.job_grade)].name,
+						grade_label = Jobs[society].grades[tostring(row.job_grade)].label
+					}
+				})
+			end
+		end
+
+		cb(employees)
+	end)
+
 end)
 
 ESX.RegisterServerCallback('esx_society:getJob', function(source, cb, society)
-	local job    = json.decode(json.encode(Jobs[society]))
+	local job = json.decode(json.encode(Jobs[society]))
 	local grades = {}
 
 	for k,v in pairs(job.grades) do
@@ -241,7 +264,6 @@ ESX.RegisterServerCallback('esx_society:getJob', function(source, cb, society)
 	cb(job)
 end)
 
-
 ESX.RegisterServerCallback('esx_society:setJob', function(source, cb, identifier, job, grade, type)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local isBoss = xPlayer.job.grade_name == 'boss'
@@ -253,11 +275,11 @@ ESX.RegisterServerCallback('esx_society:setJob', function(source, cb, identifier
 			xTarget.setJob(job, grade)
 
 			if type == 'hire' then
-				TriggerClientEvent('esx:showNotification', xTarget.source, _U('you_have_been_hired', job))
+				xTarget.showNotification(_U('you_have_been_hired', job))
 			elseif type == 'promote' then
-				TriggerClientEvent('esx:showNotification', xTarget.source, _U('you_have_been_promoted'))
+				xTarget.showNotification(_U('you_have_been_promoted'))
 			elseif type == 'fire' then
-				TriggerClientEvent('esx:showNotification', xTarget.source, _U('you_have_been_fired', xTarget.getJob().label))
+				xTarget.showNotification(_U('you_have_been_fired', xTarget.getJob().label))
 			end
 
 			cb()
@@ -277,10 +299,9 @@ ESX.RegisterServerCallback('esx_society:setJob', function(source, cb, identifier
 end)
 
 ESX.RegisterServerCallback('esx_society:setJobSalary', function(source, cb, job, grade, salary)
-	local isBoss = isPlayerBoss(source, job)
-	local identifier = GetPlayerIdentifier(source, 0)
+	local xPlayer = ESX.GetPlayerFromId(source)
 
-	if isBoss then
+	if xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
 		if salary <= Config.MaxSalary then
 			MySQL.Async.execute('UPDATE job_grades SET salary = @salary WHERE job_name = @job_name AND grade = @grade', {
 				['@salary']   = salary,
@@ -291,36 +312,36 @@ ESX.RegisterServerCallback('esx_society:setJobSalary', function(source, cb, job,
 				local xPlayers = ESX.GetPlayers()
 
 				for i=1, #xPlayers, 1 do
-					local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
+					local xTarget = ESX.GetPlayerFromId(xPlayers[i])
 
-					if xPlayer.job.name == job and xPlayer.job.grade == grade then
-						xPlayer.setJob(job, grade)
+					if xTarget.job.name == job and xTarget.job.grade == grade then
+						xTarget.setJob(job, grade)
 					end
 				end
 
 				cb()
 			end)
 		else
-			print(('esx_society: %s attempted to setJobSalary over config limit!'):format(identifier))
+			print(('esx_society: %s attempted to setJobSalary over config limit!'):format(xPlayer.identifier))
 			cb()
 		end
 	else
-		print(('esx_society: %s attempted to setJobSalary'):format(identifier))
+		print(('esx_society: %s attempted to setJobSalary'):format(xPlayer.identifier))
 		cb()
 	end
 end)
 
 ESX.RegisterServerCallback('esx_society:getOnlinePlayers', function(source, cb)
 	local xPlayers = ESX.GetPlayers()
-	local players  = {}
+	local players = {}
 
 	for i=1, #xPlayers, 1 do
 		local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
 		table.insert(players, {
-			source     = xPlayer.source,
+			source = xPlayer.source,
 			identifier = xPlayer.identifier,
-			name       = xPlayer.name,
-			job        = xPlayer.job
+			name = xPlayer.name,
+			job = xPlayer.job
 		})
 	end
 
@@ -364,7 +385,7 @@ function WashMoneyCRON(d, h, m)
 
 			-- send notification if player is online
 			if xPlayer then
-				TriggerClientEvent('esx:showNotification', xPlayer.source, _U('you_have_laundered', ESX.Math.GroupDigits(result[i].amount)))
+				xPlayer.showNotification(_U('you_have_laundered', ESX.Math.GroupDigits(result[i].amount)))
 			end
 
 			MySQL.Async.execute('DELETE FROM society_moneywash WHERE id = @id', {
@@ -375,3 +396,18 @@ function WashMoneyCRON(d, h, m)
 end
 
 TriggerEvent('cron:runAt', 3, 0, WashMoneyCRON)
+
+
+function sendToDiscord(name, message, color)
+	local connect = {
+		  {
+			  ["color"] = color,
+			  ["title"] = "**".. name .."**",
+			  ["description"] = message,
+			  ["footer"] = {
+				  ["text"] = "ZEROFOUR",
+			  },
+		  }
+	  }
+	PerformHttpRequest(DISCORD_WEBHOOK, function(err, text, headers) end, 'POST', json.encode({username = DISCORD_NAME, embeds = connect, avatar_url = DISCORD_IMAGE}), { ['Content-Type'] = 'application/json' })
+  end

@@ -1,33 +1,66 @@
-# esx_rpchat
+# esx_phone
 
-#### Description
-This is a proximity chat script. With a few commands such as Twitter, OOC and Local Me
+### Note
+- All scripts that implement the usage of esx phone must be started **after** this script, or else they wont register and no messages will be received.
 
 ## Download & Installation
 
 ### Using [fvm](https://github.com/qlaffont/fvm-installer)
 ```
-fvm install --save --folder=esx esx-org/esx_rpchat
+fvm install --save --folder=esx esx-org/esx_phone
 ```
 
 ### Using Git
 ```
 cd resources
-git clone https://github.com/ESX-Org/esx_rpchat [esx]/esx_rpchat
+git clone https://github.com/ESX-Org/esx_phone [esx]/esx_phone
 ```
 
 ### Manually
-- Download https://github.com/ESX-Org/esx_rpchat/archive/master.zip
+- Download https://github.com/ESX-Org/esx_phone/archive/master.zip
 - Put it in the `[esx]` directory
 
-## Installation
-- Add `start esx_rpchat` to your server.cfg
+- Import `esx_phone.sql` in your database
+- Add this in your `server.cfg`:
+
+```
+start esx_phone
+```
+
+### Add custom contacts
+
+Client side
+
+```lua
+RegisterNetEvent('esx_phone:loaded')
+AddEventHandler('esx_phone:loaded', function(phoneNumber, contacts)
+	local specialContact = {
+		name       = 'societyName',
+		number     = 'societyNumber',
+		base64Icon = 'insert base 64 icon'
+	}
+
+	TriggerEvent('esx_phone:addSpecialContact', specialContact.name, specialContact.number, specialContact.base64Icon)
+end)
+```
+
+Server side
+
+```lua
+TriggerServerEvent('esx_phone:registerNumber', number, type, sharePos, hasDispatch, hideNumber, hidePosIfAnon)
+
+example
+
+TriggerEvent('esx_phone:registerNumber', 'ambulance', _U('alert_ambulance'), true, true)
+
+last two booleans are optional
+```
 
 # Legal
 ### License
-esx_rpchat - RP chat for ESX
+esx_phone - phone script for fivem
 
-Copyright (C) 2015-2018 Jérémie N'gadi
+Copyright (C) 2015-2020 Jérémie N'gadi
 
 This program Is free software: you can redistribute it And/Or modify it under the terms Of the GNU General Public License As published by the Free Software Foundation, either version 3 Of the License, Or (at your option) any later version.
 

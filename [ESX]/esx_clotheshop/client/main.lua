@@ -101,6 +101,7 @@ function OpenShopMenu()
 		'arms',
 		'pants_1', 'pants_2',
 		'shoes_1', 'shoes_2',
+        'bags_1', 'bags_2',
 		'chain_1', 'chain_2',
 		'helmet_1', 'helmet_2',
 		'glasses_1', 'glasses_2'
@@ -118,31 +119,18 @@ AddEventHandler('esx_clotheshop:hasExitedMarker', function(zone)
 	currentAction = nil
 
 	if not hasPaid then
-		TriggerEvent('esx_skin:getLastSkin', function(skin)
+		ESX.TriggerServerCallback('esx_skin:getPlayerSkin', function(skin)
 			TriggerEvent('skinchanger:loadSkin', skin)
 		end)
 	end
 end)
 
 -- Create Blips
-Citizen.CreateThread(function()
-	for k,v in ipairs(Config.Shops) do
-		local blip = AddBlipForCoord(v)
-
-		SetBlipSprite (blip, 73)
-		SetBlipColour (blip, 47)
-		SetBlipAsShortRange(blip, true)
-
-		BeginTextCommandSetBlipName('STRING')
-		AddTextComponentSubstringPlayerName(_U('clothes'))
-		EndTextCommandSetBlipName(blip)
-	end
-end)
 
 -- Enter / Exit marker events & draw markers
 Citizen.CreateThread(function()
 	while true do
-		Citizen.Wait(0)
+		Citizen.Wait(1)
 		local playerCoords, isInMarker, currentZone, letSleep = GetEntityCoords(PlayerPedId()), false, nil, true
 
 		for k,v in pairs(Config.Shops) do

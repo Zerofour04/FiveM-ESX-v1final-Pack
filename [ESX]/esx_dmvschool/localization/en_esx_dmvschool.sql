@@ -1,4 +1,4 @@
-USE `essentialmode`;
+
 
 INSERT INTO `licenses` (`type`, `label`) VALUES
 	('dmv', 'Driving Permit'),

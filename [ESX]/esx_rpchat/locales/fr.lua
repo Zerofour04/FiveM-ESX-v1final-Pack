@@ -1,12 +1,13 @@
 Locales['fr'] = {
-  ['ooc_prefix'] = 'hrp | %s',
-  ['twt_help'] = 'envoie un tweet',
-  ['twt_prefix'] = '^0[^4Twitter^0] (^5@%s^0)',
-  ['me_help'] = 'action personnelle',
-  ['me_prefix'] = 'me | %s',
-  ['do_help'] = 'RP information', --TODO: check translation
-  ['do_prefix'] = 'faire | %s',
-  ['generic_argument_name'] = 'message',
-  ['generic_argument_help'] = 'le message',
-  ['unknown_command'] = '^3%s^0 n\'est pas une commande valide!',
+  ['new_message'] = '~b~Nouveau message :~s~ %s',
+  ['press_take_call'] = '%s - Appuyez sur ~INPUT_CONTEXT~ pour prendre l\'appel',
+  ['taken_call'] = '~y~%s~s~ a pris l\'appel',
+  ['gps_position'] = 'position entrée dans le GPS',
+  ['message_sent'] = 'message envoyé',
+  ['cannot_add_self'] = 'vous ne pouvez pas vous ajouter vous-même',
+  ['number_in_contacts'] = 'ce numéro est déja dans votre liste de contacts',
+  ['contact_added'] = 'contact ajouté',
+  ['contact_removed'] = 'contact supprimé',
+  ['number_not_assigned'] = 'ce numéro n\'est pas attribué...',
+  ['invalid_number'] = 'that\'s not an valid number!',
 }

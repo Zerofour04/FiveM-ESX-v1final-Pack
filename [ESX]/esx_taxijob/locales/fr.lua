@@ -1,15 +1,15 @@
 Locales['fr'] = {
   -- cloakroom
-  ['cloakroom_menu'] = 'cloakroom',
-  ['cloakroom_prompt'] = 'press ~INPUT_CONTEXT~ to open the ~y~cloakroom~s~.',
-  ['wear_citizen'] = 'citizen wear',
-  ['wear_work'] = 'taxi wear',
+  ['cloakroom_menu'] = 'vestiaire',
+  ['cloakroom_prompt'] = 'appuyez sur ~INPUT_CONTEXT~ pour ouvrir le ~y~cloakroom~s~.',
+  ['wear_citizen'] = 'tenue civile',
+  ['wear_work'] = 'tenue de travail',
 
   -- garage
-  ['spawner_prompt'] = 'press ~INPUT_CONTEXT~ to open the ~y~garage~s~.',
+  ['spawner_prompt'] = 'appuyez sur ~INPUT_CONTEXT~ pour ouvrir le ~y~garage~s~.',
   ['store_veh'] = 'appuyez sur ~INPUT_CONTEXT~ pour ranger le véhicule',
   ['spawn_veh'] = 'sortir véhicule',
-  ['spawnpoint_blocked'] = 'there is a vehicle blocking the spawnpoint!',
+  ['spawnpoint_blocked'] = 'un véhicule bloque la sortie!!',
   ['only_taxi'] = 'vous ne pouvez ranger que les taxi',
 
   ['taking_service'] = 'prise de service : Taxi/Uber',
@@ -31,6 +31,7 @@ Locales['fr'] = {
   ['return_to_veh'] = 'veuillez remonter dans votre véhicule pour continuer la mission',
   ['must_in_taxi'] = 'vous devez être dans un taxi pour commencer la mission',
   ['must_in_vehicle'] = 'vous devez être dans un véhicule pour commencer la mission',
+  ['not_in_taxi'] = 'You left the taxi while on mission!',
   ['have_earned'] = 'vous avez gagné ~g~$%s~s~',
   ['comp_earned'] = '- Votre société a gagné ~g~$%s~s~\n- Vous avez gagné ~g~$%s~s~',
   ['deposit_stock'] = 'Déposer Stock',
@@ -46,4 +47,6 @@ Locales['fr'] = {
   ['player_cannot_hold'] = 'vous n\'avez pas assez ~y~de place~s~ dans votre inventaire!',
   ['blip_taxi'] = 'taxi',
   ['phone_taxi'] = 'taxi',
+  ['taxi'] = 'taxi',
+  ['taxi_stock'] = 'taxi Stock'
 }
