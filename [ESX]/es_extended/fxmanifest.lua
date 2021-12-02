@@ -1,9 +1,10 @@
 fx_version 'adamant'
+
 game 'gta5'
 
 description 'ES Extended'
 
-version '1.1.0'
+version '1.2.0'
 
 server_scripts {
 	'@async/async.lua',
@@ -18,6 +19,8 @@ server_scripts {
 	'locales/sv.lua',
 	'locales/pl.lua',
 	'locales/cs.lua',
+	'locales/sc.lua',
+	'locales/tc.lua',
 
 	'config.lua',
 	'config.weapons.lua',
@@ -44,6 +47,8 @@ client_scripts {
 	'locales/sv.lua',
 	'locales/pl.lua',
 	'locales/cs.lua',
+	'locales/sc.lua',
+	'locales/tc.lua',
 
 	'config.lua',
 	'config.weapons.lua',
@@ -81,7 +86,8 @@ files {
 	'html/fonts/bankgothic.ttf',
 
 	'html/img/accounts/bank.png',
-	'html/img/accounts/black_money.png'
+	'html/img/accounts/black_money.png',
+	'html/img/accounts/money.png'
 }
 
 exports {
@@ -94,7 +100,5 @@ server_exports {
 
 dependencies {
 	'mysql-async',
-	'essentialmode',
-	'esplugin_mysql',
 	'async'
 }
